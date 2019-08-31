@@ -12,6 +12,7 @@ fn saisie() -> String {
         _ => {"".to_string()}
     }
 }
+
 fn input_byte() -> Option<u8> {
 	let mut entree = String::new();						
 	match io::stdin().read_line(&mut entree) {		
@@ -27,7 +28,7 @@ fn input_byte() -> Option<u8> {
 		_ => {										
 				println!("Erreur à la saisie");
 				None
-			}
+        }
 	}
 }
 
@@ -45,7 +46,6 @@ fn code_analyse(code: &Vec<char>) -> Vec<usize> {
         }
     }
     bracket_list
-
 }
 
 fn main() {
@@ -60,7 +60,6 @@ fn main() {
         code.push(op);
     }
     let bracket_list: Vec<usize> = code_analyse(&code);
-
     
     let mut i: usize = 0;
     while i < code.len() {
@@ -113,21 +112,17 @@ fn main() {
             },
             '[' => {
                 if stack[index] != 0 {
-                    // on avance d'un cran pour executer l'op suivant
                     i += 1;
                 } else {
-                    //si 0 alors on incrémente jusqu'au crochet fermant correspondant
                     let bracket_score: usize = bracket_list[i];
                     i +=1;
                     while bracket_list[i] != bracket_score {
                         i +=1;
                     }
-                    // quand on a attient le bon crochet fermant, on passe à l'op juste après
                     i +=1;
                 }
             },
             ']' => {
-                // aller au précédent [
                 let bracket_score: usize = bracket_list[i];
                 i -= 1;
                 while bracket_list[i] != bracket_score {
@@ -137,6 +132,5 @@ fn main() {
             _ => {}
         }
     }
-    
     println!("{:?}", stack);
 }
