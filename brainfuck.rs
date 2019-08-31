@@ -1,6 +1,3 @@
-// pour les loop, deux possibilités :
-//      - recursivité
-//      - loop counter
 use std::io;
 use std::string::String;
 use std::{thread, time};
