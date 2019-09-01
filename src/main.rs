@@ -1,16 +1,28 @@
 use std::string::String;
-use std::{env, io, thread, time};
+use std::{env, io, thread, time, fs};
+use std::fs::File;
+
+
 use std::str::FromStr;
 use crossterm::{terminal, ClearType};
 
 fn saisie() -> String {
     let mut input = String::new();
+    println!("Enter your code : ");
     match io::stdin().read_line(&mut input) {
         Ok(_) => {
             input.trim().to_string()
         }
         _ => {"".to_string()}
     }
+}
+
+fn code_cleaning(contents: String) -> Vec<char> {
+    let mut code: Vec<char> = Vec::new();
+    for op in contents.chars() {
+        code.push(op);
+    }
+    code
 }
 
 fn input_byte() -> Option<u8> {
@@ -46,10 +58,19 @@ fn code_analyse(code: &Vec<char>) -> Vec<usize> {
     }
     bracket_list
 }
-fn screen_output(stack: &Vec<u8>, index: usize, output: &String ) {
+fn screen_output(code: &Vec<char>, n: usize, stack: &Vec<u8>, index: usize, output: &String, exe: bool) {
+	let title = "______           _        ________          _   
+| ___ \\         (_)      / _| ___ \\        | |  
+| |_/ /_ __ __ _ _ _ __ | |_| |_/ /   _ ___| |_ 
+| ___ \\ '__/ _` | | '_ \\|  _|    / | | / __| __|
+| |_/ / | | (_| | | | | | | | |\\ \\ |_| \\__ \\ |_ 
+\\____/|_|  \\__,_|_|_| |_|_| \\_| \\_\\__,_|___/\\__|
+                                                ";
     let mut stack_line = String::new();
     let mut space = String::new();
     let mut index_line = String::new();
+    let mut pointer_line = String::new();
+    let mut code_line = String::new();
     terminal().clear(ClearType::All);
     for (i,cell) in stack.iter().enumerate() {
         stack_line = stack_line + &cell.to_string() + &' '.to_string();
@@ -67,30 +88,45 @@ fn screen_output(stack: &Vec<u8>, index: usize, output: &String ) {
             index_line = index_line + &' '.to_string() + &space;
         }
     }
-    println!("BrainFuck Interpreter by LittleBoxes"); 
-    println!("{}\n{}\nOutput : {}", stack_line, index_line, output);
-    //println!("{}", index_line);
-    //println!("Output : {}", output);
 
+    for (i, op) in code.iter().enumerate() {
+        code_line = code_line + &op.to_string();
+        if i == n {
+            pointer_line = pointer_line + &'^'.to_string();
+        } else {
+            pointer_line = pointer_line + &' '.to_string();
+        }
+    }
+    println!("{}", title);
+    println!("            a Brainfuck Interpreter Made In Rust\n");
+    if exe {
+        println!("\n{}\n{}\n\n", code_line, pointer_line);
+        println!("{}\n{}\nOutput : {}", stack_line, index_line, output);
+    }
 }
-fn interpreter(max_memory: usize, delay: u64) {
+fn interpreter(contents: String, max_memory: usize, delay: u64) {
     let mut entry = String::new();
     let mut index: usize = 0;
     let mut stack: Vec<u8> = vec![0;max_memory];
     let mut code: Vec<char> = Vec::new();
     let mut output =  String::new();
     terminal().clear(ClearType::All);
-    println!("BrainFuck Interpreter by LittleBoxes"); 
-    entry = saisie();
-    for op in entry.chars() {
-        code.push(op);
+    if contents.len() == 0 {
+         screen_output(&code, 0, &stack, index, &output, false);
+         entry = saisie();
+         for op in entry.chars() {
+             code.push(op);
+         }
+     } else {
+         code = code_cleaning(contents);
     }
+    
     let bracket_list: Vec<usize> = code_analyse(&code);
     
     let mut i: usize = 0;
     while i < code.len()  {
         thread::sleep(time::Duration::from_millis(delay));
-        screen_output(&stack, index, &output);
+        screen_output(&code, i, &stack, index, &output, true);
         match code[i] {
             '>' => {
                 i += 1;
@@ -110,7 +146,7 @@ fn interpreter(max_memory: usize, delay: u64) {
                 i +=1;
             },
             ',' => {
-                println!("Input : ");
+                println!("Input (between 0 and 255): ");
                 match input_byte() {
                     Some(nombre) => {
                         stack[index] = nombre;
@@ -163,11 +199,12 @@ fn interpreter(max_memory: usize, delay: u64) {
         }
     }
     thread::sleep(time::Duration::from_millis(delay));
-    screen_output(&stack, index, &output);
+    screen_output(&code, i, &stack, index, &output, true);
 }
 fn main() {
     let mut max_memory: usize = 30;
     let mut delay: u64 = 500;
+    let mut contents = String::new();
     let args: Vec<String> = env::args().collect();
     for i in 0..args.len() {
        if args[i] == "-m" {
@@ -186,9 +223,11 @@ fn main() {
             }
 
         } else if args[i] == "-e" {
-            
+            let filename = &args[i+1];
+            contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
+            println!("{}", filename);
         }
     
     }
-    interpreter(max_memory, delay);
+    interpreter(contents, max_memory, delay);
 }
