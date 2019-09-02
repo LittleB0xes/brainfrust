@@ -41,7 +41,7 @@ fn code_analyse(code: &Vec<char>) -> Vec<usize> {
     bracket_list
 }
 
-fn screen_output(code: &Vec<char>, n: usize, stack: &Vec<u8>, index: usize, output: &String, exe: bool) {
+fn screen_output(code: &Vec<char>, n: usize, stack: &Vec<u8>, index: usize, output: &String, exe: bool, display: bool) {
 	let title = "______           _        ________          _   
 | ___ \\         (_)      / _| ___ \\        | |  
 | |_/ /_ __ __ _ _ _ __ | |_| |_/ /   _ ___| |_ 
@@ -82,11 +82,14 @@ fn screen_output(code: &Vec<char>, n: usize, stack: &Vec<u8>, index: usize, outp
     }
     println!("{}\n            a Brainfuck Interpreter Made In Rust\n", title);
     if exe {
-        println!("\n{}\n{}\n\n{}\n{}\nOutput : {}", code_line, pointer_line, stack_line, index_line, output);
+        if display {
+            println!("\n{}\n{}\n\n{}\n{}", code_line, pointer_line, stack_line, index_line);
+        }
+        println!("Output : {}", output);
     }
 }
 
-fn interpreter(contents: String, max_memory: usize, delay: u64) {
+fn interpreter(contents: String, max_memory: usize, delay: u64, display: bool) {
     let entry: String;
     let mut index: usize = 0;
     let mut stack: Vec<u8> = vec![0;max_memory];
@@ -94,7 +97,7 @@ fn interpreter(contents: String, max_memory: usize, delay: u64) {
     let mut output =  String::new();
     terminal().clear(ClearType::All);
     if contents.len() == 0 {
-         screen_output(&code, 0, &stack, index, &output, false);
+         screen_output(&code, 0, &stack, index, &output, false, display);
          println!("Enter your code : ");
          entry = saisie();
          code = code_cleaning(entry);
@@ -106,7 +109,7 @@ fn interpreter(contents: String, max_memory: usize, delay: u64) {
     let mut i: usize = 0;
     while i < code.len()  {
         thread::sleep(time::Duration::from_millis(delay));
-        screen_output(&code, i, &stack, index, &output, true);
+        screen_output(&code, i, &stack, index, &output, true, display);
         match code[i] {
             '>' => {
                 i += 1;
@@ -173,11 +176,12 @@ fn interpreter(contents: String, max_memory: usize, delay: u64) {
         }
     }
     thread::sleep(time::Duration::from_millis(delay));
-    screen_output(&code, i, &stack, index, &output, true);
+    screen_output(&code, i, &stack, index, &output, true, display);
 }
 fn main() {
     let mut max_memory: usize = 30;
     let mut delay: u64 = 500;
+    let mut display: bool = true;
     let mut contents = String::new();
     let args: Vec<String> = env::args().collect();
     for i in 0..args.len() {
@@ -200,7 +204,9 @@ fn main() {
             let filename = &args[i+1];
             contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
             println!("{}", filename);
+        } else if args[i] == "-nodisplay" {
+            display = false;
         }
     }
-    interpreter(contents, max_memory, delay);
+    interpreter(contents, max_memory, delay, display);
 }
