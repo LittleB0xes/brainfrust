@@ -1,8 +1,5 @@
 use std::string::String;
 use std::{env, io, thread, time, fs};
-use std::fs::File;
-
-
 use std::str::FromStr;
 use crossterm::{terminal, ClearType};
 
@@ -30,7 +27,6 @@ fn code_cleaning(contents: String) -> Vec<char> {
 }
 
 fn code_analyse(code: &Vec<char>) -> Vec<usize> {
-    // Analyse du code pour trouver les paires de crochet
     let mut bracket_list: Vec<usize> = vec![0; code.len()];
     let mut bracket_count: usize = 0;
     for (i, op) in code.iter().enumerate() {
@@ -54,7 +50,7 @@ fn screen_output(code: &Vec<char>, n: usize, stack: &Vec<u8>, index: usize, outp
 \\____/|_|  \\__,_|_|_| |_|_| \\_| \\_\\__,_|___/\\__|
                                                 ";
     let mut stack_line = String::new();
-    let mut space = String::new();
+    let mut space: String;
     let mut index_line = String::new();
     let mut pointer_line = String::new();
     let mut code_line = String::new();
@@ -85,14 +81,13 @@ fn screen_output(code: &Vec<char>, n: usize, stack: &Vec<u8>, index: usize, outp
         }
     }
     println!("{}\n            a Brainfuck Interpreter Made In Rust\n", title);
-    //println!("            a Brainfuck Interpreter Made In Rust\n");
     if exe {
-        println!("\n{}\n{}\n\n\n{}\n{}\nOutput : {}", code_line, pointer_line, stack_line, index_line, output);
-        //println!("{}\n{}\nOutput : {}", stack_line, index_line, output);
+        println!("\n{}\n{}\n\n{}\n{}\nOutput : {}", code_line, pointer_line, stack_line, index_line, output);
     }
 }
+
 fn interpreter(contents: String, max_memory: usize, delay: u64) {
-    let mut entry = String::new();
+    let entry: String;
     let mut index: usize = 0;
     let mut stack: Vec<u8> = vec![0;max_memory];
     let mut code: Vec<char> = Vec::new();
@@ -108,7 +103,6 @@ fn interpreter(contents: String, max_memory: usize, delay: u64) {
     }
     
     let bracket_list: Vec<usize> = code_analyse(&code);
-    
     let mut i: usize = 0;
     while i < code.len()  {
         thread::sleep(time::Duration::from_millis(delay));
@@ -133,14 +127,6 @@ fn interpreter(contents: String, max_memory: usize, delay: u64) {
             },
             ',' => {
                 println!("Input : ");
-                /*match input_char() {
-                    Some(nombre) => {
-                        stack[index] = nombre as u8;
-                    }
-                    None => {
-                       println!("Entry error");
-                    }
-                }*/
                 let entry = saisie();
                 stack[index] = entry.chars().next().unwrap() as u8;
                 i += 1;
@@ -215,7 +201,6 @@ fn main() {
             contents = fs::read_to_string(filename).expect("Something went wrong reading the file");
             println!("{}", filename);
         }
-    
     }
     interpreter(contents, max_memory, delay);
 }
