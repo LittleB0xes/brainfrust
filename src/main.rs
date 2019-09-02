@@ -8,10 +8,9 @@ use crossterm::{terminal, ClearType};
 
 fn saisie() -> String {
     let mut input = String::new();
-    println!("Enter your code : ");
     match io::stdin().read_line(&mut input) {
         Ok(_) => {
-            input.trim().to_string()
+            input.to_string()
         }
         _ => {"".to_string()}
     }
@@ -20,29 +19,16 @@ fn saisie() -> String {
 fn code_cleaning(contents: String) -> Vec<char> {
     let mut code: Vec<char> = Vec::new();
     for op in contents.chars() {
-        code.push(op);
+        match op {
+                 '>' | '<' | '+' | '-' | '[' | ']' | '.' | ',' => {
+                    code.push(op);
+                 },
+                 _ => {}
+             }
     }
     code
 }
 
-fn input_byte() -> Option<u8> {
-	let mut entree = String::new();						
-	match io::stdin().read_line(&mut entree) {		
-		Ok(_) => {								
-			match u8::from_str(entree.trim()) {
-				Ok(nombre) => Some(nombre),		
-				Err(_) => {				
-					println!("A number between 0 and 255, please...");		
-					None						
-				}
-			}
-		},
-		_ => {										
-				println!("Erreur à la saisie");
-				None
-        }
-	}
-}
 fn code_analyse(code: &Vec<char>) -> Vec<usize> {
     // Analyse du code pour trouver les paires de crochet
     let mut bracket_list: Vec<usize> = vec![0; code.len()];
@@ -58,6 +44,7 @@ fn code_analyse(code: &Vec<char>) -> Vec<usize> {
     }
     bracket_list
 }
+
 fn screen_output(code: &Vec<char>, n: usize, stack: &Vec<u8>, index: usize, output: &String, exe: bool) {
 	let title = "______           _        ________          _   
 | ___ \\         (_)      / _| ___ \\        | |  
@@ -97,11 +84,11 @@ fn screen_output(code: &Vec<char>, n: usize, stack: &Vec<u8>, index: usize, outp
             pointer_line = pointer_line + &' '.to_string();
         }
     }
-    println!("{}", title);
-    println!("            a Brainfuck Interpreter Made In Rust\n");
+    println!("{}\n            a Brainfuck Interpreter Made In Rust\n", title);
+    //println!("            a Brainfuck Interpreter Made In Rust\n");
     if exe {
-        println!("\n{}\n{}\n\n", code_line, pointer_line);
-        println!("{}\n{}\nOutput : {}", stack_line, index_line, output);
+        println!("\n{}\n{}\n\n\n{}\n{}\nOutput : {}", code_line, pointer_line, stack_line, index_line, output);
+        //println!("{}\n{}\nOutput : {}", stack_line, index_line, output);
     }
 }
 fn interpreter(contents: String, max_memory: usize, delay: u64) {
@@ -113,10 +100,9 @@ fn interpreter(contents: String, max_memory: usize, delay: u64) {
     terminal().clear(ClearType::All);
     if contents.len() == 0 {
          screen_output(&code, 0, &stack, index, &output, false);
+         println!("Enter your code : ");
          entry = saisie();
-         for op in entry.chars() {
-             code.push(op);
-         }
+         code = code_cleaning(entry);
      } else {
          code = code_cleaning(contents);
     }
@@ -146,15 +132,17 @@ fn interpreter(contents: String, max_memory: usize, delay: u64) {
                 i +=1;
             },
             ',' => {
-                println!("Input (between 0 and 255): ");
-                match input_byte() {
+                println!("Input : ");
+                /*match input_char() {
                     Some(nombre) => {
-                        stack[index] = nombre;
+                        stack[index] = nombre as u8;
                     }
                     None => {
                        println!("Entry error");
                     }
-                }
+                }*/
+                let entry = saisie();
+                stack[index] = entry.chars().next().unwrap() as u8;
                 i += 1;
             },
             '+' => {
@@ -194,7 +182,7 @@ fn interpreter(contents: String, max_memory: usize, delay: u64) {
             },
             _ => {
                 println!("Invalid operator");
-                break;
+                i += 1;
             }
         }
     }
