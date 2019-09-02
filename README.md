@@ -1,5 +1,5 @@
 # Brainfrust
-A Brainfuck interpreter in Rust
+A Brainfuck Interpreter Made in Rust
 
 
 ## Launching arguments
