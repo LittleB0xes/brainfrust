@@ -1,5 +1,5 @@
 # Brainfrust
-A Brainfuck Interpreter Made in Rust
+A Brainfuck Interpreter Made in Rust and [Crossterm](https://github.com/crossterm-rs/crossterm) for the terminal rendering.
 
 
 ## Launching arguments
